@@ -150,5 +150,6 @@ from
 [WideWorldImporters].[Sales].[Orders] t1
 left join [WideWorldImporters].[Sales].[Customers] t2 on t1.[CustomerID] = t2.[CustomerID]
 left join [WideWorldImporters].[Sales].[OrderLines] t3 on t1.[OrderID] = t3.[OrderID]
+left join [WideWorldImporters].[Warehouse].[StockItems] t4 on t3.[StockItemID] = t4.[StockItemID]
 where
-t3.[Description] = 'Chocolate frogs 250g'
+t4.[StockItemName] = 'Chocolate frogs 250g'
