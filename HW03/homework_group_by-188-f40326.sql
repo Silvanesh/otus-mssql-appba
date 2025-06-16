@@ -33,13 +33,11 @@ USE WideWorldImporters
 select
 datepart(year,t1.[InvoiceDate]) as [Год продажи]
 ,datepart(month,t1.[InvoiceDate]) as [Месяц продажи]
-,avg(t2a.[UnitPrice]) as [Средняя цена за месяц по всем товарам]
-,sum(t3.[TransactionAmount]) as [Общая сумма продаж за месяц]
+,avg(t2.[UnitPrice]) as [Средняя цена за месяц по всем товарам]
+,sum(t2.Quantity*t2.UnitPrice) as [Общая сумма продаж за месяц]
 from
 [WideWorldImporters].[Sales].[Invoices] t1
 left join [WideWorldImporters].[Sales].[InvoiceLines] t2 on t1.InvoiceID = t2.InvoiceID
-left join [WideWorldImporters].[Warehouse].[StockItems] t2a on t2.StockItemID = t2a.StockItemID
-left join [WideWorldImporters].[Purchasing].[SupplierTransactions] t3 on t1.OrderID = t3.PurchaseOrderID
 group by
 datepart(year,t1.[InvoiceDate])
 ,datepart(month,t1.[InvoiceDate])
@@ -59,15 +57,15 @@ datepart(year,t1.[InvoiceDate])
 select
 datepart(year,t1.[InvoiceDate]) as [Год продажи]
 ,datepart(month,t1.[InvoiceDate]) as [Месяц продажи]
-,sum(t3.[TransactionAmount]) as [Общая сумма продаж]
+,sum(t2.Quantity*t2.UnitPrice) as [Общая сумма продаж]
 from
 [WideWorldImporters].[Sales].[Invoices] t1
-left join [WideWorldImporters].[Purchasing].[SupplierTransactions] t3 on t1.OrderID = t3.PurchaseOrderID
+left join [WideWorldImporters].[Sales].[InvoiceLines] t2 on t1.InvoiceID = t2.InvoiceID
 group by
 datepart(year,t1.[InvoiceDate])
 ,datepart(month,t1.[InvoiceDate])
 having
-sum(t3.[TransactionAmount]) > 4600000
+sum(t2.Quantity*t2.UnitPrice) > 4600000
 
 
 /*
@@ -91,13 +89,12 @@ select
 datepart(year,t1.[InvoiceDate]) as [Год продажи]
 ,datepart(month,t1.[InvoiceDate]) as [Месяц продажи]
 ,t4.StockItemName as [Наименование товара]
-,sum(t3.[TransactionAmount]) as [Сумма продаж]
+,sum(t2.Quantity*t2.UnitPrice) as [Сумма продаж]
 ,min(t1.[InvoiceDate]) as [Дата первой продажи]
 ,sum(t2.[Quantity]) as [Количество проданного]
 from
 [WideWorldImporters].[Sales].[Invoices] t1
 left join [WideWorldImporters].[Sales].[InvoiceLines] t2 on t1.InvoiceID = t2.InvoiceID
-left join [WideWorldImporters].[Sales].[CustomerTransactions] t3 on t1.[CustomerPurchaseOrderNumber] = t3.[CustomerTransactionID]
 left join [WideWorldImporters].[Warehouse].[StockItems] t4 on t2.StockItemID = t4.StockItemID
 group by
 datepart(year,t1.[InvoiceDate])
