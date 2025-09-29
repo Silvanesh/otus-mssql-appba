@@ -43,14 +43,14 @@ t1.[InvoiceID] as [id продажи]
 ,t2.[CustomerName] as [название клиента]
 ,t3.TransactionDate as [дата продажи]
 ,t3.[TransactionAmount] as [сумма продаж]
-,(select sum(t3a.[TransactionAmount]) from [WideWorldImporters].[Sales].[CustomerTransactions] t3a where t3.CustomerID=t3a.CustomerID and t3.[InvoiceID] >= t3a.[InvoiceID] and t3a.[TransactionTypeID] = 1) as [сумма нарастающим итогом]
+,(select sum(t3a.[TransactionAmount]) from [WideWorldImporters].[Sales].[CustomerTransactions] t3a where t3.CustomerID=t3a.CustomerID and month(t3.TransactionDate) >= month(t3a.TransactionDate) and year(t3.TransactionDate) >= year(t3a.TransactionDate) and t3a.[TransactionTypeID] = 1 and year(t3a.TransactionDate) >=2015) as [сумма нарастающим итогом]
 from
 [WideWorldImporters].[Sales].[Invoices] t1
 left join [WideWorldImporters].[Sales].[Customers] t2 on t1.CustomerID = t2.CustomerID
 left join [WideWorldImporters].[Sales].[CustomerTransactions] t3 on t1.[InvoiceID] = t3.[InvoiceID]
 where
 t3.[TransactionTypeID] = 1
-
+and year(t3.TransactionDate) >=2015
 
 /*
 2. Сделайте расчет суммы нарастающим итогом в предыдущем запросе с помощью оконной функции.
@@ -61,15 +61,17 @@ select
 t1.[InvoiceID] as [id продажи]
 ,t2.[CustomerName] as [название клиента]
 ,t3.TransactionDate as [дата продажи]
+,month(t3.TransactionDate)
 ,t3.[TransactionAmount] as [сумма продаж]
-,sum(t3.[TransactionAmount]) over(partition by t3.CustomerID order by t3.[InvoiceID]) as [сумма нарастающим итогом]
+,sum(t3.[TransactionAmount]) over(order by year(t3.TransactionDate), month(t3.TransactionDate)) as [сумма нарастающим итогом]
 from
 [WideWorldImporters].[Sales].[Invoices] t1
 left join [WideWorldImporters].[Sales].[Customers] t2 on t1.CustomerID = t2.CustomerID
 left join [WideWorldImporters].[Sales].[CustomerTransactions] t3 on t1.[InvoiceID] = t3.[InvoiceID]
 where
 t3.[TransactionTypeID] = 1
-
+and year(t3.TransactionDate) >=2015
+order by t3.TransactionDate
 /*
 3. Вывести список 2х самых популярных продуктов (по количеству проданных) 
 в каждом месяце за 2016 год (по 2 самых популярных продукта в каждом месяце).
