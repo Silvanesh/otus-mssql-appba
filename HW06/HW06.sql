@@ -82,21 +82,23 @@ Tailspin Toys (Head Office) | Ribeiroville
 */
 
 select
-t1.CustomerName
+Клиент
+,Адрес
+from(
+select
+t1.CustomerName as Клиент
 ,t2.DeliveryAddressLine1
+,t2.DeliveryAddressLine2
 from
 [WideWorldImporters].[Sales].[Customers] t1
-cross apply (
-select distinct
-t1.[DeliveryAddressLine1] 
-union all
-select distinct
-t1.[DeliveryAddressLine2]
-from 
-[WideWorldImporters].[Sales].[Customers] t1
-) t2
+cross join [WideWorldImporters].[Sales].[Customers] t2
 where
 t1.CustomerName like '%Tailspin Toys%'
+) t
+unpivot (
+Адрес for znach in (DeliveryAddressLine1
+,[DeliveryAddressLine2])) as unp
+
 
 /*
 3. В таблице стран (Application.Countries) есть поля с цифровым кодом страны и с буквенным.
@@ -114,25 +116,28 @@ CountryId | CountryName | Code
 ----------+-------------+-------
 */
 
+create table #t
+(ID nvarchar(max)
+,Страна nvarchar(max)
+,Code nvarchar(max)
+,Code2 nvarchar(max))
+
+insert into #t
 select
-t1.CountryID
-,t1.CountryName
-,t2.code
+t1.CountryID as ID
+,t1.CountryName as Страна
+,[IsoAlpha3Code] as Code
+,[IsoNumericCode] as Code2
 from
 [WideWorldImporters].[Application].[Countries] t1
-left join (
+
 select
-t1.CountryID
-,t1.[IsoAlpha3Code] as code
-from
-[WideWorldImporters].[Application].[Countries] t1
-union all
-select
-t1.CountryID 
-,cast(t1.[IsoNumericCode] as nvarchar(max))
-from
-[WideWorldImporters].[Application].[Countries] t1
-) t2 on t1.CountryID = t2.CountryID
+ID
+,Страна
+,Код
+from #t
+unpivot (
+Код for znach in (Code, Code2)) unp
 
 /*
 4. Выберите по каждому клиенту два самых дорогих товара, которые он покупал.
